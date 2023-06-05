@@ -1,0 +1,11 @@
+1 - Precisamos atualizar a tabela e br modelo das tarefas antigas ou só dessa já basta?
+
+2 - O atributo curtida em postagem é desnecessário. Talvez criar tabela própria para as curtidas de comentário? Ou criar trigger para elas?
+
+3 - Adicionar título a tabela postagem.
+
+4 - Devemos presumir que o site vai mandar os dados todos já prontos para o banco?
+
+5 - Uma consulta pode contar como mais de um requisito da 2)a)ii?
+
+6 - Podemos utilizar consultas já criadas para ser nossas views?
