@@ -363,14 +363,43 @@ insert into comentario values
 --2)a)ii
 
 select * from usuario;
-
 select * from postagem
-order by autor;
-
+		order by autor;
+	
 select * from segue;
 select * from curte;
 select * from comentario;
+select * from usuario;
+select * from postagem;
 
+--•1 consulta com uma tabela usando operadores básicos de filtro (e.g., IN, between, is null, etc).
+--Consulta que retorna as postagens feitas no mês de julho do ano 2023.
+select count(*) as postagem
+from postagem
+where datahora between '2023-06-01 00:00:00.201758' AND '2023-06-30 00:00:00.201758';
+
+--• 3 consultas com inner JOIN na cláusula FROM (pode ser self join, caso o domínio indique esse uso).
+
+--Consulta que retorna as postagens com número de curtidas abaixo da média (postagens de baixo engajamento)
+select p.url, p.conteudo,p.datahora,p.curtidas, u.nickname
+from postagem p
+inner join usuario u
+on p.autor = u.email
+WHERE p.curtidas < (SELECT AVG(p.curtidas) FROM postagem p);
+
+--Consulta que retorna o número de postagens de usuários com mais de 32 anos
+select count(u.email) as Quantidade_postagem
+from usuario u
+inner join postagem p
+on p.autor = u.email
+where (select round((current_date - u.datanasc) / 365,24)) > 32;
+
+--
+
+
+
+
+--•1 consulta com left/right/full outer join na cláusula FROM
 --Consulta que devolve a quantidade de comentários que um post teve
 select p.autor, p.conteudo, count(c.url_com) --url, titulo, autor(nome), count
 from postagem p left join comentario c
@@ -378,6 +407,8 @@ on p.url = c.url_post
 group by p.autor, p.conteudo
 order by p.autor;
 
+
+--•2 consultas usando Group By (e possivelmente o having)
 --Devolve a quantidade de seguidores de cada usuário, ordenado do mais seguido para o menos
 select u.nickname as usuario, count(s.seguidor) as seguidores
 from segue s join usuario u
@@ -390,3 +421,33 @@ select postagem_curtida as post, count(quem_curtiu) as curtidas
 from curte
 group by post
 order by curtidas desc;
+
+
+--• 1 consulta usando alguma operação de conjunto (union, except ou intersect)
+
+
+
+
+--• 2 consultas que usem subqueries.
+
+
+
+
+
+
+--2)b)Visões
+--• 1 visão que permita inserção
+--• 2 visões robustas (e.g., com vários joins) com justificativa semântica, de acordo com os requisitos da aplicação.
+
+--2)c)Índices
+--3 índices para campos indicados com justificativa dentro do contexto das consultas formuladas na questão 3a.
+
+--2)d)Reescrita de consultas
+--Identificar 2 exemplos de consultas dentro do contexto da aplicação (questão 2.a) que possam e devam ser melhoradas. Reescrevê-las. Justificar a reescrita.
+
+--2)e)Funções e procedures armazenadas
+--• 1 função que use SUM, MAX, MIN, AVG ou COUNT
+--• 2 funções e 1 procedure com justificativa semântica, conforme os requisitos da aplicação
+
+--2)f)Triggers
+--3 diferentes triggers com justificativa semântica, de acordo com os requisitos da aplicação.
