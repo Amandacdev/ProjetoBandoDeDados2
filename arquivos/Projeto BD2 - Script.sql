@@ -90,7 +90,7 @@ insert into usuario values
 ('julianalima@example.com', 'P@ssw0rd!@#', 'julianalima', 'Juliana Lima', '1993-10-12'),
 ('paulohenrique@example.com', 'Passw0rd123!', 'paulohenrique', 'Paulo Henrique', '1987-09-01'),
 ('marcosilva@example.com', 'P@ssw0rd456', 'marcosilva', 'Marco Silva', '1996-03-18'),
-('fernandalima@example.com', 'Passw0rd789!', 'fernandalima', 'Fernanda Lima', '1991-11-27');
+('fernandalima@example.com', 'Passw0rd789!', 'fernandalima', 'Fernanda Lima', '1991-11-27'),
 ('luciamartins@example.com', 'P@ssw0rd789', 'luciamartins', 'Lúcia Martins', '1996-06-05'),
 ('gabrielsantos@example.com', 'P@ssw0rd!@#', 'gabrielsantos', 'Gabriel Santos', '1994-04-17'),
 ('anacosta@example.com', 'MyP@ssw0rd123', 'anacosta', 'Ana Costa', '1992-11-23'),
@@ -385,7 +385,7 @@ select p.url, p.conteudo,p.datahora,p.curtidas, u.nickname
 from postagem p
 inner join usuario u
 on p.autor = u.email
-WHERE p.curtidas < (SELECT AVG(p.curtidas) FROM postagem p);
+WHERE p.curtidas < (SELECT AVG(p.curtidas) FROM postagem p); --NÃO TEM NENHUMA?
 
 --Consulta que retorna o número de postagens de usuários com mais de 32 anos
 select count(u.email) as Quantidade_postagem
@@ -401,7 +401,7 @@ where (select round((current_date - u.datanasc) / 365,24)) > 32;
 
 --•1 consulta com left/right/full outer join na cláusula FROM
 --Consulta que devolve a quantidade de comentários que um post teve
-select p.autor, p.conteudo, count(c.url_com) --url, titulo, autor(nome), count
+select p.autor, p.conteudo, count(c.url_com) as "Num. de coments." --url, titulo, autor(nome), count
 from postagem p left join comentario c
 on p.url = c.url_post
 group by p.autor, p.conteudo
@@ -438,6 +438,19 @@ order by curtidas desc;
 --2)b)Visões
 --• 1 visão que permita inserção
 --• 2 visões robustas (e.g., com vários joins) com justificativa semântica, de acordo com os requisitos da aplicação.
+-- Uma view chamada Métricas de usuários retornando um relatório numérico de cada usuário.
+create or replace view MetricasGerais as
+select u.nome, u.email, count(s1.seguido) as "Num. de seguidores", 
+count(s2.seguidor) as "Num. de seguidos", count(p.url) as "Num. de postagens", count(c.quem_curtiu) as "Total de curtidas"
+from usuario u
+join segue s1 on u.email = s1.seguido
+join segue s2 on u.email = s2.seguidor
+join postagem p on u.email = p.autor
+join curte c on u.email = c.quem_curtiu
+group by u.email
+order by u.nome;
+--A CORRIGIR: A contagem de seguidores e seguidos está dando igual, acho que por conta do group by. Como corrigir?
+select * from MetricasGerais;
 
 --2)c)Índices
 --3 índices para campos indicados com justificativa dentro do contexto das consultas formuladas na questão 3a.
