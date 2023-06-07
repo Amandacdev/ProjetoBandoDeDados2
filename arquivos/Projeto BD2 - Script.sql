@@ -225,7 +225,7 @@ insert into segue values
 
 
 insert into comentario values
-('www.domain.com/coment/1', 'www.domain.com/post/amandacruz/2', 'georgelima@gmail.com', 'Conteúdo do comentário 1', current_timestamp, false),
+('www.domain.com/coment/1', 'www.domain.com/post/amandacruz/2', 'georgelima@gmail.com', 'Conteúdo do comentário 1', current_timestamp, true),
 ('www.domain.com/coment/2', 'www.domain.com/post/ianribeiro/3', 'amandacruz@gmail.com', 'Conteúdo do comentário 2', current_timestamp, false),
 ('www.domain.com/coment/3', 'www.domain.com/post/joaosilva/4', 'ianribeiro@gmail.com', 'Conteúdo do comentário 3', current_timestamp, false),
 ('www.domain.com/coment/4', 'www.domain.com/post/marianasantos/5', 'joaosilva@gmail.com', 'Conteúdo do comentário 4', current_timestamp, false),
@@ -269,7 +269,7 @@ insert into comentario values
 ('www.domain.com/coment/42', 'www.domain.com/post/georgelima/1', 'ricardosilveira@gmail.com', 'Conteúdo do comentário 42', current_timestamp, false),
 ('www.domain.com/coment/43', 'www.domain.com/post/amandacruz/2', 'georgelima@gmail.com', 'Conteúdo do comentário 43', current_timestamp, false),
 ('www.domain.com/coment/44', 'www.domain.com/post/ianribeiro/3', 'amandacruz@gmail.com', 'Conteúdo do comentário 44', current_timestamp, false),
-('www.domain.com/coment/45', 'www.domain.com/post/joaosilva/4', 'ianribeiro@gmail.com', 'Conteúdo do comentário 45', current_timestamp, false),
+('www.domain.com/coment/45', 'www.domain.com/post/joaosilva/4', 'ianribeiro@gmail.com', 'Conteúdo do comentário 45', current_timestamp, true),
 ('www.domain.com/coment/46', 'www.domain.com/post/marianasantos/5', 'joaosilva@gmail.com', 'Conteúdo do comentário 46', current_timestamp, false),
 ('www.domain.com/coment/47', 'www.domain.com/post/pedrocosta/6', 'marianasantos@gmail.com', 'Conteúdo do comentário 47', current_timestamp, false),
 ('www.domain.com/coment/48', 'www.domain.com/post/larissasilva/7', 'pedrocosta@gmail.com', 'Conteúdo do comentário 48', current_timestamp, false),
@@ -592,9 +592,37 @@ inner join postagem p
 on p.autor = u.email
 where (select round((current_date - datanasc)/365)) > 32;
 
---
+--Consulta que retorna comentarios editados e o email de quem comentou
+/*
+UPDATE comentario
+SET editado = true
+WHERE url_coment = 'www.domain.com/coment/1';
 
+UPDATE comentario
+SET editado = true
+WHERE url_coment = 'www.domain.com/coment/45';
+*/
+select c.url_coment, c.url_post, u.email as autor, c.conteudo
+from comentario c
+join usuario u
+on c.comentador = u.email
+where c.editado=true;
 
+-- Retorna comentários que não tiveram curtidas (verificar se está correto)
+select c.url_coment,c.comentador as autor 
+from comentario c
+join curtidas_coment u
+on u.comentario_curtido=c.url_coment
+group by c.url_coment
+having count(u.quem_curtiu) = 6;
+
+/*Para verificar, consulta para ver numero de curtidas dos comentarios
+select c.url_coment,c.comentador as autor, count(u.quem_curtiu) as numero_curtidas
+from comentario c
+join curtidas_coment u
+on u.comentario_curtido=c.url_coment
+group by c.url_coment;
+*/
 
 
 --•1 consulta com left/right/full outer join na cláusula FROM
@@ -625,8 +653,9 @@ on c.postagem_curtida = p.url
 group by post
 order by curtidas desc;
 
-
 --• 1 consulta usando alguma operação de conjunto (union, except ou intersect)
+
+
 
 
 
@@ -645,6 +674,9 @@ join count_curtidas c
 on p.url = c.postagem_curtida
 where c.curtidas < (select avg(curtidas) from count_curtidas)
 order by c.curtidas desc;
+
+
+
 
 
 
