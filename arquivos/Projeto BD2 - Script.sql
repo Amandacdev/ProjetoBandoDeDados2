@@ -608,7 +608,7 @@ join usuario u
 on c.comentador = u.email
 where c.editado=true;
 
--- Retorna comentários que não tiveram curtidas (verificar se está correto)
+-- Consulta que retorna os comentários que não tiveram curtidas
 select c.url_coment,c.comentador as autor 
 from comentario c
 join curtidas_coment u
@@ -616,7 +616,7 @@ on u.comentario_curtido=c.url_coment
 group by c.url_coment
 having count(u.quem_curtiu) = 6;
 
-/*Para verificar, consulta para ver numero de curtidas dos comentarios
+/*Para verificar consulta acima, uma consulta que retorna o numero de curtidas dos comentarios
 select c.url_coment,c.comentador as autor, count(u.quem_curtiu) as numero_curtidas
 from comentario c
 join curtidas_coment u
@@ -627,7 +627,7 @@ group by c.url_coment;
 
 --•1 consulta com left/right/full outer join na cláusula FROM
 
---Consulta que devolve a quantidade de comentários que os posts tiveram, do mais comentado para o menos
+--Consulta que retorna a quantidade de comentários que os posts tiveram, do mais comentado para o menos
 select p.url as post, p.titulo, u.nickname as autor, count(c.url_coment) as qtde_coments
 from postagem p left join comentario c
 on p.url = c.url_post
@@ -639,14 +639,14 @@ order by qtde_coments desc;
 
 --•2 consultas usando Group By (e possivelmente o having)
 
---Devolve a quantidade de seguidores de cada usuário, ordenado do mais seguido para o menos
+--Consulta que retorna a quantidade de seguidores de cada usuário, ordenado do mais seguido para o menos
 select u.nickname as usuario, count(s.seguidor) as seguidores
 from segue s right join usuario u
 on s.seguido = u.email
 group by usuario
 order by seguidores desc;
 
---Devolve a quantidade de curtidas de cada post, ordenado do mais curtido para o menos
+--Consulta que retorna a quantidade de curtidas de cada post, ordenado do mais curtido para o menos
 select p.url as post, count(c.quem_curtiu) as curtidas 
 from curtidas_post c right join postagem p
 on c.postagem_curtida = p.url
@@ -654,10 +654,16 @@ group by post
 order by curtidas desc;
 
 --• 1 consulta usando alguma operação de conjunto (union, except ou intersect)
-
-
-
-
+--Consulta que retorna os usuarios que comentaram algum post e que curtiram algum post(sinal de atividade na rede)
+select u.nome,u.email
+from usuario u
+join curtidas_coment cc
+on cc.quem_curtiu = u.email
+INTERSECT
+select u.nome,u.email
+from usuario u
+join curtidas_post cp
+on cp.quem_curtiu = u.email;
 
 
 --• 2 consultas que usem subqueries.
@@ -675,6 +681,7 @@ on p.url = c.postagem_curtida
 where c.curtidas < (select avg(curtidas) from count_curtidas)
 order by c.curtidas desc;
 
+--
 
 
 
