@@ -697,28 +697,11 @@ order by c.curtidas desc;
 
 --
 
-
-
-
-
-
 --2)b)Visões
 --• 1 visão que permita inserção
 --• 2 visões robustas (e.g., com vários joins) com justificativa semântica, de acordo com os requisitos da aplicação.
 
 -- Uma view chamada Métricas de usuários retornando um relatório numérico de cada usuário.
-create or replace view metricas_gerais as
-select u.nome, u.email, count(s1.seguido) as "Num. de seguidores", 
-count(s2.seguidor) as "Num. de seguidos", count(p.url) as "Num. de postagens", count(c.quem_curtiu) as "Total de curtidas"
-from usuario u
-join segue s1 on u.email = s1.seguido
-join segue s2 on u.email = s2.seguidor
-join postagem p on u.email = p.autor
-join curtidas_post c on u.email = c.quem_curtiu
-group by u.email
-order by u.nome;
---A CORRIGIR: A contagem de seguidores e seguidos está dando igual, acho que por conta do group by. Como corrigir?
-select * from metricas_gerais;
 
 --2)c)Índices
 --3 índices para campos indicados com justificativa dentro do contexto das consultas formuladas na questão 3a.

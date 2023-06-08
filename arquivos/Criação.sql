@@ -10,15 +10,15 @@
 --2)a)i)Tabelas e constraints (PK, FK, UNIQUE, campos que não podem ter valores nulos, checks de validação) de acordo com as regras de negócio do projeto.
 
 create table usuario(
-email varchar(45),
+nickname varchar(45),
+email varchar(45) not null,
 senha varchar(20) not null,
-nickname varchar(45) not null,
 nome varchar(45) not null,
 datanasc date not null);
 
 alter table usuario
-add constraint pk_usuario primary key(email),
-add constraint uq_nickname unique(nickname),
+add constraint pk_usuario primary key(nickname),
+add constraint uq_email unique(email),
 add constraint check_email check (email like '%@%.com%'),
 add constraint check_datanasc check (datanasc <= current_date);
 
@@ -34,14 +34,14 @@ alter table postagem
 add constraint pk_postagem primary key(url),
 add constraint fk_postagem_usuario foreign key(autor) references usuario;
 
-
+--checkar se editado = false na inserção, provavel trigger
 create table comentario(
 url_coment varchar(500),
 url_post varchar(500) not null,
 comentador varchar(45) not null,
 conteudo text not null,
 datahora timestamp not null,
-editado boolean not null);
+editado boolean not null default false);
 
 alter table comentario
 add constraint pk_comentario primary key(url_coment),
