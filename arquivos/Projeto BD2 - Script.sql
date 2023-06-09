@@ -118,7 +118,8 @@ insert into usuario values
 ('camilasilva', 'camilasilva@gmail.com', 'C@mil@2021', 'Camila Silva', '1996-12-05'),
 ('felipefernandes', 'felipefernandes@gmail.com', 'F3rn@nd3s!', 'Felipe Fernandes', '1988-06-25'),
 ('sabrinacosta', 'sabrinacosta@gmail.com', 'C0st@S@br1n@', 'Sabrina Costa', '1994-04-18'),
-('ricardosilveira', 'ricardosilveira@gmail.com', 'S!lv3ir@2021', 'Ricardo Silveira', '1997-08-28');
+('ricardosilveira', 'ricardosilveira@gmail.com', 'S!lv3ir@2021', 'Ricardo Silveira', '1997-08-28'),
+('joaopaulo', 'joaopaulo@gmail.com', 'P@u!o', 'João Paulo', '1967-10-06');
 
 
 insert into postagem values
@@ -434,7 +435,8 @@ insert into curtidas_post values
 insert into curtidas_post values
 ('georgelima', 'www.domain.com/post/ianribeiro/37'),
 ('amandacruz', 'www.domain.com/post/ianribeiro/37'),
-('ianribeiro', 'www.domain.com/post/ianribeiro/37');
+('ianribeiro', 'www.domain.com/post/ianribeiro/37'),
+('ianribeiro', 'www.domain.com/post/ianribeiro/3');
 
 /*
 insert into curtidas_coment values
@@ -607,7 +609,15 @@ insert into curtidas_coment values
 ('georgelima', 'www.domain.com/coment/3'),
 ('amandacruz', 'www.domain.com/coment/3'),
 ('ianribeiro', 'www.domain.com/coment/3'),
-('joaosilva', 'www.domain.com/coment/3');
+('joaosilva', 'www.domain.com/coment/3'),
+('georgelima', 'www.domain.com/coment/2'),
+('amandacruz', 'www.domain.com/coment/2'),
+('ianribeiro', 'www.domain.com/coment/2'),
+('joaosilva', 'www.domain.com/coment/2'),
+('georgelima', 'www.domain.com/coment/1'),
+('amandacruz', 'www.domain.com/coment/1'),
+('ianribeiro', 'www.domain.com/coment/1'),
+('joaosilva', 'www.domain.com/coment/1');
 
 
 
@@ -643,6 +653,70 @@ inner join count_comentarios cc on p.url = cc.post
 where cc.qtde_coments > (select avg(qtde_coments) from count_comentarios)
 order by cc.qtde_coments desc;
 
+--Consulta que retorna um relatório numérico de cada usuário.
+with seguidores as --quantidade de seguidores que cada usuário tem
+(select u.nickname, count(s.seguidor) as seguidores
+from usuario u
+left join segue s on u.nickname = s.seguido 
+group by u.nickname),
+
+seguindo as --quantidade de usuários que cada usuário segue
+(select u.nickname, count(s.seguido) as segue
+from usuario u
+left join segue s on u.nickname = s.seguidor 
+group by u.nickname),
+
+posts_curtidos as --quantidade de posts que cada usuário curtiu
+(select u.nickname, count(cp.quem_curtiu) as posts_curtidos
+from usuario u
+left join curtidas_post cp on u.nickname = cp.quem_curtiu
+group by u.nickname),
+
+coments_curtidos as --quantidade de comentários que cada usuário curtiu
+(select u.nickname, count(cc.quem_curtiu) as coments_curtidos
+from usuario u
+left join curtidas_coment cc on u.nickname = cc.quem_curtiu
+group by u.nickname),
+
+posts_feitos as --quantidade de posts criados por cada usuário
+(select u.nickname, count(p.autor) as posts_realizados
+from usuario u
+left join postagem p on u.nickname = p.autor
+group by u.nickname),
+
+coments_feitos as --quantidade de comentários criados por cada usuário
+(select u.nickname, count(c.comentador) as coments_realizados
+from usuario u
+left join comentario c on u.nickname = c.comentador
+group by u.nickname),
+
+curtidas_posts_usuario as --curtidas acumuladas de todos os posts da autoria do usuário
+(select u.nickname, count(cp.quem_curtiu) as curtidas_posts_do_usuario
+from postagem p
+right join usuario u on p.autor = u.nickname
+left join curtidas_post cp on p.url = cp.postagem_curtida
+group by u.nickname),
+
+curtidas_coments_usuario as --curtidas acumuladas de todos os comentários da autoria do usuário
+(select u.nickname, count(cc.quem_curtiu) as curtidas_coments_do_usuario
+from comentario c
+right join usuario u on c.comentador = u.nickname
+left join curtidas_coment cc on c.url_coment = cc.comentario_curtido
+group by u.nickname)
+
+select u.nickname as usuario, ss.seguidores, so.segue, pc.posts_curtidos, cc.coments_curtidos,
+pf.posts_realizados, cf.coments_realizados, cpu.curtidas_posts_do_usuario, ccu.curtidas_coments_do_usuario
+from usuario u
+join seguidores ss on u.nickname = ss.nickname
+join seguindo so on u.nickname = so.nickname
+join posts_curtidos pc on u.nickname = pc.nickname
+join coments_curtidos cc on u.nickname = cc.nickname
+join posts_feitos pf on u.nickname = pf.nickname
+join coments_feitos cf on u.nickname = cf.nickname
+join curtidas_posts_usuario cpu on u.nickname = cpu.nickname
+join curtidas_coments_usuario ccu on u.nickname = ccu.nickname
+order by seguidores desc;
+
 
 --•1 consulta com left/right/full outer join na cláusula FROM
 
@@ -656,6 +730,9 @@ order by qtde_coments desc;
 
 
 --•2 consultas usando Group By (e possivelmente o having)
+
+
+--ALTERAR
 
 --Consulta que retorna a quantidade de seguidores de cada usuário, ordenado do mais seguido para o menos
 select u.nickname as usuario, count(s.seguidor) as seguidores
@@ -726,15 +803,120 @@ right join qtde_curtidas_posts qcp on p.url = qcp.posts
 where qcc.curtidas > qcp.curtidas;
 
 --2)b)Visões
+
 --• 1 visão que permita inserção
+
+--Visão que mostra postagem e seus comentários. Caso inserção seja feita nela, é presumido que o autor está comentando no seu próprio post
+select p.url as post, p.autor, p.titulo, p.conteudo as conteudo_post,
+c.url_coment as comentario, c.comentador, c.conteudo as conteudo_coment
+from postagem p
+join comentario c on p.url = c.url_post;
+
+
+select url, conteudo
+from postagem
+union
+select url_coment, conteudo
+from comentario
+
 --• 2 visões robustas (e.g., com vários joins) com justificativa semântica, de acordo com os requisitos da aplicação.
 
---Visão que mostra postagem e seus comentarios, caso inserçao seja feita nela, é presumido que o autor esta comentando no seu próprio post
+--Visão que retorna posts polêmicos e potencialente tóxicos, que talvez devam ser removidos
+--Métrica utilizada para um post ser considerado polêmico é se a quantidade de comentários com mais curtidas do que o próprio post for pelo menos 3
+create or replace view posts_polemicos as
+with qtde_curtidas_coments as
+(select comentario_curtido, count(quem_curtiu) as curtidas
+from curtidas_coment
+group by comentario_curtido),
+qtde_curtidas_posts as
+(select p.url as posts, count(cp.quem_curtiu) as curtidas
+from curtidas_post cp
+right join postagem p on cp.postagem_curtida = p.url
+group by posts),
+posts_arriscados as
+(select p.url as post, p.titulo as titulo_post, 
+c.url_coment as comentario, c.conteudo as conteudo_comentario, 
+qcc.curtidas as curtidas_comentario, qcp.curtidas as curtidas_post
+from postagem p
+inner join comentario c on p.url = c.url_post
+left join qtde_curtidas_coments qcc on c.url_coment = qcc.comentario_curtido
+right join qtde_curtidas_posts qcp on p.url = qcp.posts
+where qcc.curtidas > qcp.curtidas)
+select post as post_polemico, titulo_post, count(comentario) as qtde_coments_com_mais_curtidas
+from posts_arriscados
+group by post_polemico, titulo_post
+having count(comentario) >= 3;
 
--- Uma view chamada Métricas de usuários retornando um relatório numérico de cada usuário.
+select * from posts_polemicos;
 
+--Visão que retorna um relatório numérico de cada usuário.
+create or replace view metricas_usuarios as
+with seguidores as --quantidade de seguidores que cada usuário tem
+(select u.nickname, count(s.seguidor) as seguidores
+from usuario u
+left join segue s on u.nickname = s.seguido 
+group by u.nickname),
+
+seguindo as --quantidade de usuários que cada usuário segue
+(select u.nickname, count(s.seguido) as segue
+from usuario u
+left join segue s on u.nickname = s.seguidor 
+group by u.nickname),
+
+posts_curtidos as --quantidade de posts que cada usuário curtiu
+(select u.nickname, count(cp.quem_curtiu) as posts_curtidos
+from usuario u
+left join curtidas_post cp on u.nickname = cp.quem_curtiu
+group by u.nickname),
+
+coments_curtidos as --quantidade de comentários que cada usuário curtiu
+(select u.nickname, count(cc.quem_curtiu) as coments_curtidos
+from usuario u
+left join curtidas_coment cc on u.nickname = cc.quem_curtiu
+group by u.nickname),
+
+posts_feitos as --quantidade de posts criados por cada usuário
+(select u.nickname, count(p.autor) as posts_realizados
+from usuario u
+left join postagem p on u.nickname = p.autor
+group by u.nickname),
+
+coments_feitos as --quantidade de comentários criados por cada usuário
+(select u.nickname, count(c.comentador) as coments_realizados
+from usuario u
+left join comentario c on u.nickname = c.comentador
+group by u.nickname),
+
+curtidas_posts_usuario as --curtidas acumuladas de todos os posts da autoria do usuário
+(select u.nickname, count(cp.quem_curtiu) as curtidas_posts_do_usuario
+from postagem p
+right join usuario u on p.autor = u.nickname
+left join curtidas_post cp on p.url = cp.postagem_curtida
+group by u.nickname),
+
+curtidas_coments_usuario as --curtidas acumuladas de todos os comentários da autoria do usuário
+(select u.nickname, count(cc.quem_curtiu) as curtidas_coments_do_usuario
+from comentario c
+right join usuario u on c.comentador = u.nickname
+left join curtidas_coment cc on c.url_coment = cc.comentario_curtido
+group by u.nickname)
+
+select u.nickname as usuario, ss.seguidores, so.segue, pc.posts_curtidos, cc.coments_curtidos,
+pf.posts_realizados, cf.coments_realizados, cpu.curtidas_posts_do_usuario, ccu.curtidas_coments_do_usuario
+from usuario u
+join seguidores ss on u.nickname = ss.nickname
+join seguindo so on u.nickname = so.nickname
+join posts_curtidos pc on u.nickname = pc.nickname
+join coments_curtidos cc on u.nickname = cc.nickname
+join posts_feitos pf on u.nickname = pf.nickname
+join coments_feitos cf on u.nickname = cf.nickname
+join curtidas_posts_usuario cpu on u.nickname = cpu.nickname
+join curtidas_coments_usuario ccu on u.nickname = ccu.nickname
+order by seguidores desc;
+
+select * from metricas_usuarios;
 --2)c)Índices
---3 índices para campos indicados com justificativa dentro do contexto das consultas formuladas na questão 3a.
+--3 índices para campos indicados com justificativa dentro do contexto das consultas formuladas na questão 2a.
 
 --2)d)Reescrita de consultas
 --Identificar 2 exemplos de consultas dentro do contexto da aplicação (questão 2.a) que possam e devam ser melhoradas. Reescrevê-las. Justificar a reescrita.
@@ -742,6 +924,9 @@ where qcc.curtidas > qcp.curtidas;
 --2)e)Funções e procedures armazenadas
 --• 1 função que use SUM, MAX, MIN, AVG ou COUNT
 --• 2 funções e 1 procedure com justificativa semântica, conforme os requisitos da aplicação
+
+--procedure desabilitar comentários
+
 
 --2)f)Triggers
 --3 diferentes triggers com justificativa semântica, de acordo com os requisitos da aplicação.

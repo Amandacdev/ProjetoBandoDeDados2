@@ -34,7 +34,8 @@ insert into usuario values
 ('camilasilva', 'camilasilva@gmail.com', 'C@mil@2021', 'Camila Silva', '1996-12-05'),
 ('felipefernandes', 'felipefernandes@gmail.com', 'F3rn@nd3s!', 'Felipe Fernandes', '1988-06-25'),
 ('sabrinacosta', 'sabrinacosta@gmail.com', 'C0st@S@br1n@', 'Sabrina Costa', '1994-04-18'),
-('ricardosilveira', 'ricardosilveira@gmail.com', 'S!lv3ir@2021', 'Ricardo Silveira', '1997-08-28');
+('ricardosilveira', 'ricardosilveira@gmail.com', 'S!lv3ir@2021', 'Ricardo Silveira', '1997-08-28'),
+('joaopaulo', 'joaopaulo@gmail.com', 'P@u!o', 'João Paulo', '1967-10-06');
 
 
 insert into postagem values
@@ -350,7 +351,8 @@ insert into curtidas_post values
 insert into curtidas_post values
 ('georgelima', 'www.domain.com/post/ianribeiro/37'),
 ('amandacruz', 'www.domain.com/post/ianribeiro/37'),
-('ianribeiro', 'www.domain.com/post/ianribeiro/37');
+('ianribeiro', 'www.domain.com/post/ianribeiro/37'),
+('ianribeiro', 'www.domain.com/post/ianribeiro/3');
 
 /*
 insert into curtidas_coment values
@@ -523,5 +525,12 @@ insert into curtidas_coment values
 ('georgelima', 'www.domain.com/coment/3'),
 ('amandacruz', 'www.domain.com/coment/3'),
 ('ianribeiro', 'www.domain.com/coment/3'),
-('joaosilva', 'www.domain.com/coment/3');
-
+('joaosilva', 'www.domain.com/coment/3'),
+('georgelima', 'www.domain.com/coment/2'),
+('amandacruz', 'www.domain.com/coment/2'),
+('ianribeiro', 'www.domain.com/coment/2'),
+('joaosilva', 'www.domain.com/coment/2'),
+('georgelima', 'www.domain.com/coment/1'),
+('amandacruz', 'www.domain.com/coment/1'),
+('ianribeiro', 'www.domain.com/coment/1'),
+('joaosilva', 'www.domain.com/coment/1');
