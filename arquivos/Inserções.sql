@@ -522,4 +522,6 @@ insert into curtidas_coment values
 insert into curtidas_coment values
 ('georgelima', 'www.domain.com/coment/3'),
 ('amandacruz', 'www.domain.com/coment/3'),
-('ianribeiro', 'www.domain.com/coment/3');
+('ianribeiro', 'www.domain.com/coment/3'),
+('joaosilva', 'www.domain.com/coment/3');
+

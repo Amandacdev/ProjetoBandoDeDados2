@@ -16,7 +16,17 @@ where url_coment not in (select distinct comentario_curtido
 
 --• 3 consultas com inner JOIN na cláusula FROM (pode ser self join, caso o domínio indique esse uso).
 
-
+--Consulta que devolve os posts com quantidade de comentários acima da média (posts que geraram mais engajamento)
+with count_comentarios as
+(select p.url as post, count(c.url_coment) as qtde_coments
+from comentario c
+right join postagem p on c.url_post = p.url
+group by post)
+select p.url, p.autor, p.titulo, cc.qtde_coments
+from postagem p 
+inner join count_comentarios cc on p.url = cc.post
+where cc.qtde_coments > (select avg(qtde_coments) from count_comentarios)
+order by cc.qtde_coments desc;
 
 
 --•1 consulta com left/right/full outer join na cláusula FROM
@@ -80,3 +90,22 @@ join usuario u on p.autor = u.nickname
 join count_curtidas c on p.url = c.post
 where c.curtidas > (select avg(curtidas) * 1.7 from count_curtidas)
 order by c.curtidas desc;
+
+--Consulta que devolve comentários que tiveram mais curtidas do que o próprio post
+with qtde_curtidas_coments as
+(select comentario_curtido, count(quem_curtiu) as curtidas
+from curtidas_coment
+group by comentario_curtido),
+qtde_curtidas_posts as
+(select p.url as posts, count(cp.quem_curtiu) as curtidas
+from curtidas_post cp
+right join postagem p on cp.postagem_curtida = p.url
+group by posts)
+select p.url as post, p.titulo as titulo_post, 
+c.url_coment as comentario, c.conteudo as conteudo_comentario, 
+qcc.curtidas as curtidas_comentario, qcp.curtidas as curtidas_post
+from postagem p
+inner join comentario c on p.url = c.url_post
+left join qtde_curtidas_coments qcc on c.url_coment = qcc.comentario_curtido
+right join qtde_curtidas_posts qcp on p.url = qcp.posts
+where qcc.curtidas > qcp.curtidas;
