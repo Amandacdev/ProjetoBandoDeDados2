@@ -146,54 +146,86 @@ call monitorarAtividades('georgelima');
 
 --• 1 função que use SUM, MAX, MIN, AVG ou COUNT
 --Função que retorna o número de comentários de um determinado post
-Create or replace function somaComentarios(post varchar)
+Create or replace function soma_comentarios(post postagem.url%type)
 Returns integer
 As $$
-Declare qtde_comentarios varchar(25);
+Declare qtde_comentarios integer;
 Begin	
-	SELECT COUNT(c.url_coment) into qtde_comentarios
-	FROM postagem p
-	JOIN comentario c ON p.url = c.url_post
-	WHERE p.url = post
-	GROUP BY p.url, p.titulo;
+	SELECT COUNT(url_coment) into qtde_comentarios
+	FROM comentario
+	WHERE url_post = post;
 return qtde_comentarios;
 End; $$ LANGUAGE 'plpgsql';
 
-select somaComentarios('www.domain.com/post/ianribeiro/3');
+select soma_comentarios('www.domain.com/post/ianribeiro/37');
 
---Função que retorna a quantidade de postagens feitas em determinado período
-Create or replace function post_por_data(data1 date, data2 date)
-Returns table(
-		url2 varchar,
-		autor2 varchar,
-		titulo2 varchar,
-		conteudo2 text,
-		datahora2 timestamp) As $$
-BEGIN
-	return query
-		select *
-		from postagem 
-		where datahora between data1 and data2;
-End; $$ 
-LANGUAGE 'plpgsql';
 
-select post_por_data('2011-10-08 ','2023-10-16');
+--• 2 funções e 1 procedure com justificativa semântica, conforme os requisitos da aplicação
+
+
+--Vou fazer minha versão e depois a gente conversa em reunião melhor sobre qual incluir.
+
+create or replace function posts_no_periodo(data1 date, data2 date)
+returns integer as $$
+Declare qtde_posts integer;
+begin
+	select count(*) into qtde_posts
+	from postagem
+	where datahora between data1 and data2;
+	return qtde_posts;
+end; $$ language plpgsql;
+
+select posts_no_periodo('2023-06-27', '2023-07-03');
+
+
+insert into postagem values
+('teste', 'ianribeiro', 'teste', 'teste', '2023-06-02 14:14:14'),
+('teste2', 'ianribeiro', 'teste', 'teste', '2023-06-02 14:14:14'),
+('teste3', 'ianribeiro', 'teste', 'teste', '2023-07-02 14:14:14'),
+('teste4', 'ianribeiro', 'teste', 'teste', '2023-06-27 14:14:14');
+select * from postagem
 
 --Função que retorna o número de postagens de usuários de uma determinada idade (informação importante para estudo de usuários)
 Create or replace function post_por_idade(idade integer)
 Returns integer
 As $$
-Declare qtde_posts varchar(25);
+Declare qtde_posts integer;
 Begin
 	select count(u.email) into qtde_posts
 	from usuario u
 	inner join postagem p
-	on p.autor = u.email
+	on p.autor = u.nickname
 	where (select round((current_date - datanasc)/365)) = idade;
 return qtde_posts;
 End; $$ LANGUAGE 'plpgsql';
 
-select post_por_idade(32);
+
+select post_por_idade(1);
+
+insert into usuario values
+('teste', 'teste@gmail.com', 'teste', 'teste', '2022-06-09');
+
+select post_por_idade(1);
+
+insert into postagem values
+('1teste', 'teste', 'teste', 'teste', '2023-06-02 14:14:14');
+
+select post_por_idade(1);
+
+insert into postagem values
+('2teste', 'teste', 'teste', 'teste', '2023-06-02 14:14:14');
+
+select post_por_idade(1);
+
+insert into postagem values
+('3teste', 'teste', 'teste', 'teste', '2023-06-02 14:14:14');
+
+select post_por_idade(1);
+
+insert into postagem values
+('4teste', 'teste', 'teste', 'teste', '2023-06-02 14:14:14');
+
+select post_por_idade(1);
 
 -- Triggers:
 

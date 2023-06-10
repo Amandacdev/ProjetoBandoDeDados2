@@ -807,17 +807,18 @@ where qcc.curtidas > qcp.curtidas;
 --• 1 visão que permita inserção
 
 --Visão que mostra postagem e seus comentários. Caso inserção seja feita nela, é presumido que o autor está comentando no seu próprio post
+create or replace view postagens_comentarios as
 select p.url as post, p.autor, p.titulo, p.conteudo as conteudo_post,
 c.url_coment as comentario, c.comentador, c.conteudo as conteudo_coment
 from postagem p
 join comentario c on p.url = c.url_post;
 
+select * from postagens_comentarios;
+select * from comentario;
 
-select url, conteudo
-from postagem
-union
-select url_coment, conteudo
-from comentario
+insert into postagens_comentarios values
+('www.domain.com/post/georgelima/38', 'georgelima', 'Titulo da postagem 38', 'Conteúdo da postagem 38', 'www.domain.com/coment/4', 'georgelima', 'Conteúdo do comentário 4');
+
 
 --• 2 visões robustas (e.g., com vários joins) com justificativa semântica, de acordo com os requisitos da aplicação.
 
@@ -915,18 +916,113 @@ join curtidas_coments_usuario ccu on u.nickname = ccu.nickname
 order by seguidores desc;
 
 select * from metricas_usuarios;
+
+
 --2)c)Índices
 --3 índices para campos indicados com justificativa dentro do contexto das consultas formuladas na questão 2a.
+
+--Indexando chaves estrangeiras:
+create index comentador_comentario on comentario(comentador);
+create index autor_postagem on postagem(autor);
+-- Indexando data de nascimento para consultas por intervalos:
+create index datanasc_usuario on usuario(datanasc); --replace
+
 
 --2)d)Reescrita de consultas
 --Identificar 2 exemplos de consultas dentro do contexto da aplicação (questão 2.a) que possam e devam ser melhoradas. Reescrevê-las. Justificar a reescrita.
 
+
 --2)e)Funções e procedures armazenadas
+
 --• 1 função que use SUM, MAX, MIN, AVG ou COUNT
+
+--Função que retorna o número de comentários de um determinado post
+Create or replace function soma_comentarios(post postagem.url%type)
+Returns integer
+As $$
+Declare qtde_comentarios integer;
+Begin	
+	SELECT COUNT(url_coment) into qtde_comentarios
+	FROM comentario
+	WHERE url_post = post;
+return qtde_comentarios;
+End; $$ LANGUAGE 'plpgsql';
+
+select soma_comentarios('www.domain.com/post/ianribeiro/37');
+
+
 --• 2 funções e 1 procedure com justificativa semântica, conforme os requisitos da aplicação
 
---procedure desabilitar comentários
+--Função que retorna a quantidade de postagens feitas em determinado período
+create or replace function posts_no_periodo(data1 date, data2 date)
+returns integer as $$
+Declare qtde_posts integer;
+begin
+	select count(*) into qtde_posts
+	from postagem
+	where datahora between data1 and data2;
+	return qtde_posts;
+end; $$ language plpgsql;
 
+insert into postagem values
+('teste', 'ianribeiro', 'teste', 'teste', '2023-07-02 14:14:14'),
+('teste2', 'ianribeiro', 'teste', 'teste', '2023-06-27 14:14:14');
+
+select posts_no_periodo('2023-06-27', '2023-07-03');
+
+--Função que retorna o número de postagens de usuários de uma determinada idade (informação importante para estudo de usuários)
+Create or replace function post_por_idade(idade integer)
+Returns integer
+As $$
+Declare qtde_posts integer;
+Begin
+	select count(u.email) into qtde_posts
+	from usuario u
+	inner join postagem p
+	on p.autor = u.nickname
+	where (select round((current_date - datanasc)/365)) = idade;
+return qtde_posts;
+End; $$ LANGUAGE 'plpgsql';
+
+select post_por_idade(1);
+
+insert into usuario values
+('teste', 'teste@gmail.com', 'teste', 'teste', '2022-06-09');
+
+select post_por_idade(1);
+
+insert into postagem values
+('1teste', 'teste', 'teste', 'teste', '2023-06-02 14:14:14');
+
+select post_por_idade(1);
+
+insert into postagem values
+('2teste', 'teste', 'teste', 'teste', '2023-06-02 14:14:14');
+
+select post_por_idade(1);
+
+insert into postagem values
+('3teste', 'teste', 'teste', 'teste', '2023-06-02 14:14:14');
+
+select post_por_idade(1);
+
+insert into postagem values
+('4teste', 'teste', 'teste', 'teste', '2023-06-02 14:14:14');
+
+select post_por_idade(1);
+
+--Procedure que desabilita comentários em um post
+--Ela salva todos os comentários que já haviam sido feitos em uma tabela log, e depois os deleta
+--Adiciona um trigger para garantir que mais nenhum comentário seja inserido nesse post
+create trigger fulano
+before insert on sicrano
+for each row execute beltrano()
 
 --2)f)Triggers
 --3 diferentes triggers com justificativa semântica, de acordo com os requisitos da aplicação.
+
+--Trigger para nao permitir mais inserçao em um comentario especifico
+
+--Trigger para quando for fazer inserção em comentario, o campo editado sempre ser false
+
+--Trigger instead of insert para a view
