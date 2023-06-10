@@ -229,3 +229,27 @@ select post_por_idade(1);
 
 -- Triggers:
 
+--Trigger que verifica antes de inserir um comentário se o campo editado está como false, pois não faz sentido um comentário já ser inserido com editado true. 
+--A função altera o valor de editado para false antes da inserção na tabela comentario.
+
+CREATE TRIGGER verifica_comentario
+BEFORE INSERT ON comentario
+FOR EACH ROW EXECUTE
+PROCEDURE verificacao_Comentario();
+
+CREATE OR REPLACE FUNCTION verificacao_Comentario(); 
+RETURNS TRIGGER AS $$
+BEGIN
+	IF (new.editado = 'true') THEN
+	new.editado = 'false';
+	RETURN new;
+END IF;
+END;
+$$ language plpgsql;
+
+Select * from comentario;
+/* Inserts para teste
+insert into comentario values
+('www.domain.com/coment/103', 'www.domain.com/post/amandacruz/2', 'georgelima@gmail.com', 'Conteúdo do comentário 103', current_timestamp, true),
+('www.domain.com/coment/104', 'www.domain.com/post/ianribeiro/3', 'amandacruz@gmail.com', 'Conteúdo do comentário 104', current_timestamp, true);
+*/
