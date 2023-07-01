@@ -17,10 +17,10 @@ db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {Seguidores: ["Jorgin"
 
 //Inserindo Postagens:
 db.Postagem.insertOne({URL: "www.domain.com/001", Título: "My first post", Conteúdo: "Hello, world!", Datahora: "01/07/2023 - 16:09", Tag: ["New"]})
-db.Postagem.insertOne({URL: "www.domain.com/002", Título: "Título da postagem 2", Conteúdo: "Conteúdo da postagem 2", Datahora: "01/07/2023 - 13:08", Tag: ["New"]})
-db.Postagem.insertOne({URL: "www.domain.com/003", Título: "Título da postagem 3", Conteúdo: "Conteúdo da postagem 3", Datahora: "15/06/2023 - 19:03", Tag: ["Arte","Desenhos"]})
-db.Postagem.insertOne({URL: "www.domain.com/004", Título: "Título da postagem 4", Conteúdo: "Conteúdo da postagem 4", Datahora: "28/06/2023 - 10:01", Tag: ["Cinema","Marvel"]})
-db.Postagem.insertOne({URL: "www.domain.com/005", Título: "Título da postagem 5", Conteúdo: "Conteúdo da postagem 5", Datahora: "01/06/2023 - 22:40", Tag: ["Netflix","Black Mirror"]})
+db.Postagem.insertOne({URL: "www.domain.com/002", Título: "Título da postagem 2", Conteúdo: "Conteúdo da postagem 2", Datahora: "01/07/2023 - 13:08", Tags: ["New"]})
+db.Postagem.insertOne({URL: "www.domain.com/003", Título: "Título da postagem 3", Conteúdo: "Conteúdo da postagem 3", Datahora: "15/06/2023 - 19:03", Tags: ["Arte","Desenhos"]})
+db.Postagem.insertOne({URL: "www.domain.com/004", Título: "Título da postagem 4", Conteúdo: "Conteúdo da postagem 4", Datahora: "28/06/2023 - 10:01", Tags: ["Cinema","Marvel"]})
+db.Postagem.insertOne({URL: "www.domain.com/005", Título: "Título da postagem 5", Conteúdo: "Conteúdo da postagem 5", Datahora: "01/06/2023 - 22:40", Tags: ["Netflix","Black Mirror"]})
 
 //Atribuindo autores para as Postagens: 
 db.Usuário.update({Nickname: "Jorgin"}, {$set: {Postagens: ["www.domain.com/001"]}})
