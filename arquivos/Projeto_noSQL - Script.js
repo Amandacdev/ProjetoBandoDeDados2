@@ -86,14 +86,14 @@ db.Usuário.find({ Gênero: { $in: ["Feminino", "Masculino"] } })
 
 
 //➢ 2 consultas com pelo menos filtros diversos e com projeção; 
-//Consulta que retorna as duas primeiras postagens que possuem a tag linkUp
-db.Postagem.find({ Tag: { $in: ["linkUp"] } }, { Tag: { $slice: 2 } })
+//Consulta que retorna as duas primeiras postagens que possuem a tag New
+db.Postagem.find({ Tag: { $in: ["New"] } }, { Tag: { $slice: 2 } })
 
 
 
 //➢ 1 consulta com pelo menos acesso a elemento de array; 
-//Consulta que retorna as postagens que não tiveram curtidas (baixo engajamento)
-db.Postagem.find({ "Curtida por": { $size: 0 } })
+//Consulta que retorna as postagens que tiveram apenas uma curtida (baixo engajamento)
+db.Postagem.find({ "Curtida por": { $size: 1 } })
 //OU
 //Consulta que retorna os comentários curtidos por um determinado usuário
 db.Comentário.find({ "Curtido por": { $elemMatch: { $eq: "Amandinha" } } })
