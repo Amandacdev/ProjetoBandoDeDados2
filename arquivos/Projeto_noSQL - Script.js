@@ -1,4 +1,4 @@
-//Criando e alimentando as coleções:
+//b.i. Criando e alimentando as coleções:
 
 //Inserindo Usuários:
 db.Usuário.insertOne({Nickname: "Jorgin", Email: "george@mail.com", Senha: "password", Nome: {"Primeiro nome": "George", "Sobrenome": "Lima"}, Nascimento: "21/11/1993", Gênero: "Masculino"})
@@ -77,3 +77,55 @@ db.Usuário.update({Nickname: "Amandinha"}, {$set: {"Comentários curtidos": ["w
 db.Usuário.update({Nickname: "admin"}, {$set: {"Comentários curtidos": ["www.domain.com/002/comment/002"]}})
 db.Usuário.update({Nickname: "user"}, {$set: {"Comentários curtidos": ["www.domain.com/004/comment/004"]}})
 db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {"Comentários curtidos": ["www.domain.com/001/comment/001"]}})
+
+//b.ii. Consultas
+
+//➢ 2 consultas com pelo menos filtros diversos (IN, GT, etc), sem projeção; 
+//Consulta que retorna os usuários que se identificam como Feminino ou Masculino
+db.Usuário.find({ Gênero: { $in: ["Feminino", "Masculino"] } })
+
+
+//➢ 2 consultas com pelo menos filtros diversos e com projeção; 
+//Consulta que retorna as duas primeiras postagens que possuem a tag linkUp
+db.Postagem.find({ Tag: { $in: ["linkUp"] } }, { Tag: { $slice: 2 } })
+
+
+
+//➢ 1 consulta com pelo menos acesso a elemento de array; 
+//Consulta que retorna as postagens que não tiveram curtidas (baixo engajamento)
+db.Postagem.find({ "Curtida por": { $size: 0 } })
+//OU
+//Consulta que retorna os comentários curtidos por um determinado usuário
+db.Comentário.find({ "Curtido por": { $elemMatch: { $eq: "Amandinha" } } })
+
+//➢ 1 consulta com pelo menos acesso a estrutura/objeto embutido; 
+//➢ 1 consulta com pelo menos sort e limit e filtros e projeções;  
+
+//➢ 1 consulta com pelo menos aggregate e group by; 
+//Consulta que retorna a média de curtidas dos comentários
+db.Comentário.aggregate([
+    {
+      $group: {
+        _id: null,
+        médiaCurtidasporComent: { $avg: { $size: "$Curtido por" } }
+      }
+    }
+])
+
+//ou
+//Consulta que retorna os usuários, informando seu número de seguidores, de usuários seguidos, e número de postagens
+db.Usuário.aggregate([
+  {
+    $group: {
+      _id: "$_id",
+      Nickname: { $first: "$Nickname" },
+      somaSeguindo: { $size: "$Segue" },
+      somaSeguidores: { $size: "$Seguidores" },
+      numPostagens: { $size: "$Postagens" }
+    }
+  }
+])
+
+//➢ 1 consulta com pelo menos aggregate e match ou project ou ambos; 
+//➢ 1 consulta com pelo menos aggregate e lookup; 
+//➢ 1 outra consulta (robusta) a seu critério, dentro do contexto da aplicação. 
