@@ -1,4 +1,4 @@
-//b.i. Criando e alimentando as coleções:
+//3) a.i e 3)b.i => Criando e alimentando as coleções (com 5 inserções para cada coleção):
 
 //Inserindo Usuários:
 db.Usuário.insertOne({Nickname: "Jorgin", Email: "george@mail.com", Senha: "password", Nome: {"Primeiro nome": "George", "Sobrenome": "Lima"}, Nascimento: "21/11/1993", Gênero: "Masculino"})
@@ -78,28 +78,40 @@ db.Usuário.update({Nickname: "admin"}, {$set: {"Comentários curtidos": ["www.d
 db.Usuário.update({Nickname: "user"}, {$set: {"Comentários curtidos": ["www.domain.com/004/comment/004"]}})
 db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {"Comentários curtidos": ["www.domain.com/001/comment/001"]}})
 
-//b.ii. Consultas
+//3)a.ii => Criação de 2 índices com justificativa
+
+
+
+
+
+
+//3)b.ii => Consultas diversas
 
 //➢ 2 consultas com pelo menos filtros diversos (IN, GT, etc), sem projeção; 
 //Consulta que retorna os usuários que se identificam como Feminino ou Masculino
 db.Usuário.find({ Gênero: { $in: ["Feminino", "Masculino"] } })
 
+//Consulta que retorna postagens cujo número de Tags é maior que dois ****
+db.Postagem.find({ "Tag": { $size: { $gt: 2 } } })
 
 //➢ 2 consultas com pelo menos filtros diversos e com projeção; 
 //Consulta que retorna as duas primeiras postagens que possuem a tag New
 db.Postagem.find({ Tag: { $in: ["New"] } }, { Tag: { $slice: 2 } })
 
-
+//Consulta que retorna o Nickname e o email dos Usuários que seguem o Usuário "Amandinha" ****
+db.Usuário.find({ Segue: "Amandinha" }, { Nickname: 1, Email: 1, _id: 0 })
 
 //➢ 1 consulta com pelo menos acesso a elemento de array; 
-//Consulta que retorna as postagens que tiveram apenas uma curtida (baixo engajamento)
-db.Postagem.find({ "Curtida por": { $size: 1 } })
-//OU
 //Consulta que retorna os comentários curtidos por um determinado usuário
 db.Comentário.find({ "Curtido por": { $elemMatch: { $eq: "Amandinha" } } })
 
-//➢ 1 consulta com pelo menos acesso a estrutura/objeto embutido; 
-//➢ 1 consulta com pelo menos sort e limit e filtros e projeções;  
+//➢ 1 consulta com pelo menos acesso a estrutura/objeto embutido;
+//Consulta que retorna os usuários cujo sobrenome seja Lima, Cruz ou Ribeiro ****
+db.Usuário.find({ "Nome.Sobrenome": { $in: ["Lima", "Cruz", "Ribeiro"] } })
+
+//➢ 1 consulta com pelo menos sort e limit e filtros e projeções; 
+//Consulta que retorna 5 postagens que não tiveram curtidas, exibidas em ordem alfabética por Nickname (postagens com baixo engajamento) ****
+db.Postagem.find({ "Curtida por": { $size: 1 } }).sort({ “Nickname": 1 }).limit(5)
 
 //➢ 1 consulta com pelo menos aggregate e group by; 
 //Consulta que retorna a média de curtidas dos comentários
@@ -110,20 +122,6 @@ db.Comentário.aggregate([
         médiaCurtidasporComent: { $avg: { $size: "$Curtido por" } }
       }
     }
-])
-
-//ou
-//Consulta que retorna os usuários, informando seu número de seguidores, de usuários seguidos, e número de postagens
-db.Usuário.aggregate([
-  {
-    $group: {
-      _id: "$_id",
-      Nickname: { $first: "$Nickname" },
-      somaSeguindo: { $size: "$Segue" },
-      somaSeguidores: { $size: "$Seguidores" },
-      numPostagens: { $size: "$Postagens" }
-    }
-  }
 ])
 
 //➢ 1 consulta com pelo menos aggregate e match ou project ou ambos; 
