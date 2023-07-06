@@ -16,16 +16,19 @@ db.Usuário.update({Nickname: "Amandinha"}, {$set: {Seguidores: ["Jorgin"]}})
 db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {Seguidores: ["Jorgin"]}})
 
 //Inserindo Postagens:
-db.Postagem.insertOne({URL: "www.domain.com/001", Título: "My first post", Conteúdo: "Hello, world!", Datahora: "01/07/2023 - 16:09", Tag: ["New"]})
+db.Postagem.insertOne({URL: "www.domain.com/001", Título: "My first post", Conteúdo: "Hello, world! This is LinkUp!", Datahora: "01/07/2023 - 16:09", Tags: ["New", "LinkUp"]})
 db.Postagem.insertOne({URL: "www.domain.com/002", Título: "Título da postagem 2", Conteúdo: "Conteúdo da postagem 2", Datahora: "01/07/2023 - 13:08", Tags: ["New"]})
 db.Postagem.insertOne({URL: "www.domain.com/003", Título: "Título da postagem 3", Conteúdo: "Conteúdo da postagem 3", Datahora: "15/06/2023 - 19:03", Tags: ["Arte","Desenhos"]})
 db.Postagem.insertOne({URL: "www.domain.com/004", Título: "Título da postagem 4", Conteúdo: "Conteúdo da postagem 4", Datahora: "28/06/2023 - 10:01", Tags: ["Cinema","Marvel"]})
 db.Postagem.insertOne({URL: "www.domain.com/005", Título: "Título da postagem 5", Conteúdo: "Conteúdo da postagem 5", Datahora: "01/06/2023 - 22:40", Tags: ["Netflix","Black Mirror"]})
+db.Postagem.insertOne({URL: "www.domain.com/006", Título: "Título da postagem 6", Conteúdo: "Amei a LinkUp, parece o Threads!", Datahora: "05/07/2023 - 22:40", Tags: ["Internet","Threads"]})
+db.Postagem.insertOne({URL: "www.domain.com/007", Título: "Título da postagem 7", Conteúdo: "LinkUp rainha, Twitter nadinha!", Datahora: "05/07/2023 - 23:40", Tags: ["Twitter","LinkUp"]})
+db.Postagem.insertOne({URL: "www.domain.com/008", Título: "Título da postagem 8", Conteúdo: "Odeio redes sociais!", Datahora: "06/07/2023 - 12:00", Tags: ["Odeio","Redes", "Sociais", "#FaleiToLeve", "Desabafo"]})
 
 //Atribuindo autores para as Postagens: 
-db.Usuário.update({Nickname: "Jorgin"}, {$set: {Postagens: ["www.domain.com/001"]}})
-db.Usuário.update({Nickname: "Amandinha"}, {$set: {Postagens: ["www.domain.com/002"]}})
-db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {Postagens: ["www.domain.com/003"]}})
+db.Usuário.update({Nickname: "Jorgin"}, {$set: {Postagens: ["www.domain.com/001", "www.domain.com/007"]}})
+db.Usuário.update({Nickname: "Amandinha"}, {$set: {Postagens: ["www.domain.com/002", "www.domain.com/006"]}})
+db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {Postagens: ["www.domain.com/003", "www.domain.com/008"]}})
 db.Usuário.update({Nickname: "admin"}, {$set: {Postagens: ["www.domain.com/004"]}})
 db.Usuário.update({Nickname: "user"}, {$set: {Postagens: ["www.domain.com/005"]}})
 
@@ -45,9 +48,9 @@ db.Postagem.update({URL: "www.domain.com/005"}, {$set: {"Curtida por": ["admin"]
 
 //Inserindo comentários:
 db.Comentário.insertOne({URL: "www.domain.com/001/comment/001", Datahora: "01/07/2023 - 17:44", Conteúdo: "Comentário 1", Editado: false})
-db.Comentário.insertOne({URL: "www.domain.com/002/comment/002", Datahora: "01/07/2023 - 14:09", Conteúdo: "Comentário 2", Editado: false})
+db.Comentário.insertOne({URL: "www.domain.com/002/comment/002", Datahora: "01/07/2023 - 14:09", Conteúdo: "Comentário 2", Editado: true})
 db.Comentário.insertOne({URL: "www.domain.com/003/comment/003", Datahora: "15/06/2023 - 19:30", Conteúdo: "Comentário 3", Editado: false})
-db.Comentário.insertOne({URL: "www.domain.com/004/comment/004", Datahora: "28/06/2023 - 11:59", Conteúdo: "Comentário 4", Editado: false})
+db.Comentário.insertOne({URL: "www.domain.com/004/comment/004", Datahora: "28/06/2023 - 11:59", Conteúdo: "Comentário 4", Editado: true})
 db.Comentário.insertOne({URL: "www.domain.com/005/comment/005", Datahora: "01/06/2023 - 22:43", Conteúdo: "Comentário 5", Editado: false})
 
 //Atribuindo autoria aos Comentários:
@@ -80,12 +83,9 @@ db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {"Comentários curtido
 
 //3)a.ii => Criação de 2 índices com justificativa
 
-
-
-
-
-
-
+db.Usuário.createIndex( { Nascimento: 1 } ) //Campo consultado por intervalos, logo a indexação acelera a consulta.
+db.Postagem.createIndex( { Datahora: 1 } ) //Campo consultado por intervalos, logo a indexação acelera a consulta.
+db.Comentário.createIndex( { Datahora: 1 } ) //Campo consultado por intervalos, logo a indexação acelera a consulta.
 
 //3)b.ii => Consultas diversas
 
@@ -93,13 +93,13 @@ db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {"Comentários curtido
 //Consulta que retorna os usuários que se identificam como Feminino ou Masculino
 db.Usuário.find({ Gênero: { $in: ["Feminino", "Masculino"] } })
 
-//Consulta que retorna todas as postagens que possuem em seu conteúdo a palavra linkUp (escrita tanto em letras maiúsculas quanto minúsculas) ********FALTA TESTAR |é relevante saber que postagens estão falando da aplicação em questão, certo? se formos usar essa consulta, termos que inserir algum conteudo com esse termo, para o resultado nao ser zero**
+//Consulta que retorna todas as postagens que possuem em seu conteúdo a palavra linkUp (escrita tanto em letras maiúsculas quanto minúsculas)
 db.Postagem.find({Conteúdo: {$regex: /linkUp/i}})
 
 
 //➢ 2 consultas com pelo menos filtros diversos e com projeção; 
-//Consulta que retorna as duas primeiras postagens que possuem a tag New      ********* essa consulta é interessante? podemos justificar que é interessante saber as postagens que falam de novidades(filtro New seria representando isso)??
-db.Postagem.find({ Tag: { $in: ["New"] } }, { Tag: { $slice: 2 } })
+//Consulta que retorna as duas primeiras postagens que possuem a tag New
+db.Postagem.find({ Tags: { $in: ["New"] } }, { Tag: { $slice: 2 } })
 
 //Consulta que retorna o Nickname e o email dos Usuários que seguem o Usuário "Amandinha"
 db.Usuário.find({ Segue: "Amandinha" }, { Nickname: 1, Email: 1, _id: 0 })
@@ -113,8 +113,8 @@ db.Comentário.find({ "Curtido por": { $elemMatch: { $eq: "Amandinha" } } })
 db.Usuário.find({ "Nome.Sobrenome": { $in: ["Lima", "Cruz", "Ribeiro"] } })
 
 //➢ 1 consulta com pelo menos sort e limit e filtros e projeções; 
-//Consulta que retorna 5 postagens que não tiveram curtidas, exibidas em ordem alfabética por Nickname (postagens com baixo engajamento)
-db.Postagem.find({ "Curtida por": { $size: 1 } }).sort({ “Nickname": 1 }).limit(5)
+//Consulta que retorna 5 postagens que tiveram apenas 1curtida, exibidas em ordem alfabética por Nickname (postagens com baixo engajamento)
+db.Postagem.find({ "Curtida por": { $size: 1 } }).sort({ "Nickname": 1 }).limit(5)
 
 //➢ 1 consulta com pelo menos aggregate e group by; 
 //Consulta que retorna a média de curtidas dos comentários
@@ -129,30 +129,20 @@ db.Comentário.aggregate([
 
 //➢ 1 consulta com pelo menos aggregate e match ou project ou ambos;
 
-//Consulta que retorna postagens cujo número de Tags é maior que dois **************FALTA TESTAR, se não funcionar, testar a forma escrita abaixo. | Essa consulta é relevante?
+//Consulta que retorna postagens cujo número de Tags é maior que dois
 db.Postagem.aggregate(
 [
      {$project: {_id:1, URL:1, Título:1, Nickname:1, 
-                 	size_of_tag: {$size: "$Tag"}
+                 	size_of_tag: {$size: "$Tags"}
                 }
      },
      {$match: {"size_of_tag": {$gt: 2}}}
 ])
 
 
-db.Postagem.aggregate(
-[
-  {$project: { _id: 1, URL: 1, Título: "$Título", Nickname: "$Nickname",
-     		 size_of_tag: { $size: "$Tag" }
-  	  }
-  },
-  {$match: { size_of_tag: { $gt: 2 }}}
-])
-
-
 //➢ 1 consulta com pelo menos aggregate e lookup;
 
-//Consulta que retorna os comentários feitos pelo usuário YanzinDaQuebrada que foram editados **************FALTA TESTAR
+//Consulta que retorna os comentários feitos pelo usuário YanzinDaQuebrada que foram editados
 db.Comentário.aggregate([
   {
     $match: {
@@ -176,7 +166,7 @@ db.Comentário.aggregate([
 
 //➢ 1 outra consulta (robusta) a seu critério, dentro do contexto da aplicação. 
 
-//Consulta que retorna as postagens feitas pelo usuário Jorgin e os comentários feitos nessas postagens ***********FALTA TESTAR | é uma consulta robusta?
+//Consulta que retorna as postagens feitas pelo usuário Jorgin e os comentários feitos nessas postagens
 db.Postagem.aggregate([
   {
     $lookup: {
@@ -197,6 +187,22 @@ db.Postagem.aggregate([
       localField: "URL",
       foreignField: "URL",
       as: "comentários"
+    }
+  }
+])
+
+//Consulta que retorna a contagem de atividade de cada usuário da rede:
+
+db.Usuário.aggregate([
+  {
+    $project: {
+      Nickname: 1,
+      Num_Segue: { $size: { $ifNull: ["$Segue", []] } },
+      Num_Seguidores: { $size: { $ifNull: ["$Seguidores", []] } },
+      Num_Postagens: { $size: { $ifNull: ["$Postagens", []] } },
+      Num_Post_Curtidas: { $size: { $ifNull: ["$Postagens curtidas", []]}},
+      Num_Coment_Feitos: { $size: { $ifNull: ["$Comentários", []]}},
+      Num_Coment_Curtidos: { $size: { $ifNull: ["$Comentários curtidos", []]}},
     }
   }
 ])
