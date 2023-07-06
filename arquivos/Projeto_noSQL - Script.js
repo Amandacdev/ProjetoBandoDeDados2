@@ -83,9 +83,10 @@ db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {"Comentários curtido
 
 //3)a.ii => Criação de 2 índices com justificativa
 
-db.Usuário.createIndex( { Nascimento: 1 } ) //Campo consultado por intervalos, logo a indexação acelera a consulta.
-db.Postagem.createIndex( { Datahora: 1 } ) //Campo consultado por intervalos, logo a indexação acelera a consulta.
-db.Comentário.createIndex( { Datahora: 1 } ) //Campo consultado por intervalos, logo a indexação acelera a consulta.
+//Os campos a seguir foram escolhidos para indexação pois são consultados por intervalos, logo a sua indexação acelera a consulta.
+db.Usuário.createIndex( { Nascimento: 1 } )
+db.Postagem.createIndex( { Datahora: 1 } )
+db.Comentário.createIndex( { Datahora: 1 } )
 
 //3)b.ii => Consultas diversas
 
@@ -96,9 +97,8 @@ db.Usuário.find({ Gênero: { $in: ["Feminino", "Masculino"] } })
 //Consulta que retorna todas as postagens que possuem em seu conteúdo a palavra linkUp (escrita tanto em letras maiúsculas quanto minúsculas)
 db.Postagem.find({Conteúdo: {$regex: /linkUp/i}})
 
-
 //➢ 2 consultas com pelo menos filtros diversos e com projeção; 
-//Consulta que retorna as duas primeiras postagens que possuem a tag New
+//Consulta que retorna as duas primeiras postagens que possuem a tag New (Postagens com assuntos novos, atuais)
 db.Postagem.find({ Tags: { $in: ["New"] } }, { Tag: { $slice: 2 } })
 
 //Consulta que retorna o Nickname e o email dos Usuários que seguem o Usuário "Amandinha"
@@ -113,8 +113,8 @@ db.Comentário.find({ "Curtido por": { $elemMatch: { $eq: "Amandinha" } } })
 db.Usuário.find({ "Nome.Sobrenome": { $in: ["Lima", "Cruz", "Ribeiro"] } })
 
 //➢ 1 consulta com pelo menos sort e limit e filtros e projeções; 
-//Consulta que retorna 5 postagens que tiveram apenas 1curtida, exibidas em ordem alfabética por Nickname (postagens com baixo engajamento)
-db.Postagem.find({ "Curtida por": { $size: 1 } }).sort({ "Nickname": 1 }).limit(5)
+//Consulta que retorna 5 postagens que não tiveram curtida, exibidas em ordem alfabética por Nickname (Postagens com baixo engajamento)
+db.Postagem.find({ "Curtida por": { $size: 0 } }).sort({ "Nickname": 1 }).limit(5)
 
 //➢ 1 consulta com pelo menos aggregate e group by; 
 //Consulta que retorna a média de curtidas dos comentários
@@ -128,7 +128,6 @@ db.Comentário.aggregate([
 ])
 
 //➢ 1 consulta com pelo menos aggregate e match ou project ou ambos;
-
 //Consulta que retorna postagens cujo número de Tags é maior que dois
 db.Postagem.aggregate(
 [
@@ -139,9 +138,7 @@ db.Postagem.aggregate(
      {$match: {"size_of_tag": {$gt: 2}}}
 ])
 
-
 //➢ 1 consulta com pelo menos aggregate e lookup;
-
 //Consulta que retorna os comentários feitos pelo usuário YanzinDaQuebrada que foram editados
 db.Comentário.aggregate([
   {
@@ -165,7 +162,6 @@ db.Comentário.aggregate([
 ])
 
 //➢ 1 outra consulta (robusta) a seu critério, dentro do contexto da aplicação. 
-
 //Consulta que retorna as postagens feitas pelo usuário Jorgin e os comentários feitos nessas postagens
 db.Postagem.aggregate([
   {
@@ -192,7 +188,6 @@ db.Postagem.aggregate([
 ])
 
 //Consulta que retorna a contagem de atividade de cada usuário da rede:
-
 db.Usuário.aggregate([
   {
     $project: {
