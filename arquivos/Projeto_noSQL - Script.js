@@ -85,32 +85,35 @@ db.Usuário.update({Nickname: "YanzinDaQuebrada"}, {$set: {"Comentários curtido
 
 
 
+
+
 //3)b.ii => Consultas diversas
 
 //➢ 2 consultas com pelo menos filtros diversos (IN, GT, etc), sem projeção; 
 //Consulta que retorna os usuários que se identificam como Feminino ou Masculino
 db.Usuário.find({ Gênero: { $in: ["Feminino", "Masculino"] } })
 
-//Consulta que retorna postagens cujo número de Tags é maior que dois ****
-db.Postagem.find({ "Tag": { $size: { $gt: 2 } } })
+//Consulta que retorna todas as postagens que possuem em seu conteúdo a palavra linkUp (escrita tanto em letras maiúsculas quanto minúsculas) ********FALTA TESTAR |é relevante saber que postagens estão falando da aplicação em questão, certo? se formos usar essa consulta, termos que inserir algum conteudo com esse termo, para o resultado nao ser zero**
+db.Postagem.find({Conteúdo: {$regex: /linkUp/i}})
+
 
 //➢ 2 consultas com pelo menos filtros diversos e com projeção; 
-//Consulta que retorna as duas primeiras postagens que possuem a tag New
+//Consulta que retorna as duas primeiras postagens que possuem a tag New      ********* essa consulta é interessante? podemos justificar que é interessante saber as postagens que falam de novidades(filtro New seria representando isso)??
 db.Postagem.find({ Tag: { $in: ["New"] } }, { Tag: { $slice: 2 } })
 
-//Consulta que retorna o Nickname e o email dos Usuários que seguem o Usuário "Amandinha" ****
+//Consulta que retorna o Nickname e o email dos Usuários que seguem o Usuário "Amandinha"
 db.Usuário.find({ Segue: "Amandinha" }, { Nickname: 1, Email: 1, _id: 0 })
 
 //➢ 1 consulta com pelo menos acesso a elemento de array; 
-//Consulta que retorna os comentários curtidos por um determinado usuário
+//Consulta que retorna os comentários curtidos pelo usuário "Amandinha"
 db.Comentário.find({ "Curtido por": { $elemMatch: { $eq: "Amandinha" } } })
 
 //➢ 1 consulta com pelo menos acesso a estrutura/objeto embutido;
-//Consulta que retorna os usuários cujo sobrenome seja Lima, Cruz ou Ribeiro ****
+//Consulta que retorna os usuários cujo sobrenome seja Lima, Cruz ou Ribeiro
 db.Usuário.find({ "Nome.Sobrenome": { $in: ["Lima", "Cruz", "Ribeiro"] } })
 
 //➢ 1 consulta com pelo menos sort e limit e filtros e projeções; 
-//Consulta que retorna 5 postagens que não tiveram curtidas, exibidas em ordem alfabética por Nickname (postagens com baixo engajamento) ****
+//Consulta que retorna 5 postagens que não tiveram curtidas, exibidas em ordem alfabética por Nickname (postagens com baixo engajamento)
 db.Postagem.find({ "Curtida por": { $size: 1 } }).sort({ “Nickname": 1 }).limit(5)
 
 //➢ 1 consulta com pelo menos aggregate e group by; 
@@ -124,6 +127,77 @@ db.Comentário.aggregate([
     }
 ])
 
-//➢ 1 consulta com pelo menos aggregate e match ou project ou ambos; 
-//➢ 1 consulta com pelo menos aggregate e lookup; 
+//➢ 1 consulta com pelo menos aggregate e match ou project ou ambos;
+
+//Consulta que retorna postagens cujo número de Tags é maior que dois **************FALTA TESTAR, se não funcionar, testar a forma escrita abaixo. | Essa consulta é relevante?
+db.Postagem.aggregate(
+[
+     {$project: {_id:1, URL:1, Título:1, Nickname:1, 
+                 	size_of_tag: {$size: "$Tag"}
+                }
+     },
+     {$match: {"size_of_tag": {$gt: 2}}}
+])
+
+
+db.Postagem.aggregate(
+[
+  {$project: { _id: 1, URL: 1, Título: "$Título", Nickname: "$Nickname",
+     		 size_of_tag: { $size: "$Tag" }
+  	  }
+  },
+  {$match: { size_of_tag: { $gt: 2 }}}
+])
+
+
+//➢ 1 consulta com pelo menos aggregate e lookup;
+
+//Consulta que retorna os comentários feitos pelo usuário YanzinDaQuebrada que foram editados **************FALTA TESTAR
+db.Comentário.aggregate([
+  {
+    $match: {
+      Editado: true
+    }
+  },
+  {
+    $lookup: {
+      from: "Usuário",
+      localField: "URL",
+      foreignField: "Comentários",
+      as: "usuários"
+    }
+  },
+  {
+    $match: {
+      "usuários.Nickname": "YanzinDaQuebrada"
+    }
+  }
+])
+
 //➢ 1 outra consulta (robusta) a seu critério, dentro do contexto da aplicação. 
+
+//Consulta que retorna as postagens feitas pelo usuário Jorgin e os comentários feitos nessas postagens ***********FALTA TESTAR | é uma consulta robusta?
+db.Postagem.aggregate([
+  {
+    $lookup: {
+      from: "Usuário",
+      localField: "URL",
+      foreignField: "Postagens",
+      as: "usuário"
+    }
+  },
+  {
+    $match: {
+      "usuário.Nickname": "Jorgin"
+    }
+  },
+  {
+    $lookup: {
+      from: "Comentário",
+      localField: "URL",
+      foreignField: "URL",
+      as: "comentários"
+    }
+  }
+])
+
