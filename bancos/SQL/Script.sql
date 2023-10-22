@@ -301,20 +301,15 @@ order by curtidas desc;
 --• 1 consulta usando alguma operação de conjunto (union, except ou intersect)
 
 --Consulta que retorna os usuários que interagiram com a rede de todas as formas(comentaram, postaram, curtiram e seguiram)(sinal de atividade na rede)
-select seguidor as top_users 
-from segue
+select seguidor as top_users from segue
 intersect
-select quem_curtiu
-from curtidas_post
+select quem_curtiu from curtidas_post
 intersect
-select quem_curtiu
-from curtidas_coment
+select quem_curtiu from curtidas_coment
 intersect
-select autor
-from postagem
+select autor from postagem
 intersect
-select comentador
-from comentario;
+select comentador from comentario;
 
 
 
@@ -368,11 +363,34 @@ join comentario c on p.url = c.url_post;
 
 select * from postagens_comentarios;
 
---Para fazer a inserção, é necessário ativar o trigger da linha 720
+--Trigger para inserção na view
+CREATE OR REPLACE FUNCTION insert_postagens_comentarios()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Inserir na tabela "postagem" com base nos valores inseridos
+    INSERT INTO postagem(url, autor, titulo, conteudo, datahora)
+    VALUES (NEW.post, NEW.autor, NEW.titulo, NEW.conteudo_post, current_timestamp);
+	
+    -- Inserir na tabela "comentario" com base nos valores inseridos
+    INSERT INTO comentario(url_coment, url_post, comentador, conteudo, datahora, editado)
+    VALUES (NEW.comentario, NEW.post, NEW.autor, NEW.conteudo_coment, current_timestamp, FALSE);
+
+    RETURN NULL; -- Retorna NULL para evitar duplicação de dados na tabela subjacente
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_insert_postagens_comentarios
+INSTEAD OF INSERT ON postagens_comentarios
+FOR EACH ROW
+EXECUTE PROCEDURE insert_postagens_comentarios();
+
+insert into postagens_comentarios values
+('www.domain.com/post/georgelima/13', 'georgelima', 'Titulo da postagem 13', 'Conteúdo da postagem 13', 'www.domain.com/coment/13', null, 'Conteúdo do comentário 13');
+
 insert into postagens_comentarios values
 ('www.domain.com/post/georgelima/7', 'georgelima', 'Titulo da postagem 7', 'Conteúdo da postagem 7', 'www.domain.com/coment/11', 'georgelima', 'Conteúdo do comentário 11');
 
-
+select * from postagens_comentarios;
 
 --• 2 visões robustas (e.g., com vários joins) com justificativa semântica, de acordo com os requisitos da aplicação.
 
@@ -495,20 +513,11 @@ create index datanasc_usuario on usuario(datanasc);
 --Agora que temos uma view com diferentes métricas dos usuários, podemos ampliar essa consulta exibindo métricas dos top usuários
 select usuario, segue, posts_curtidos, coments_curtidos, posts_realizados, coments_realizados
 from metricas_usuarios
-where usuario in(select seguidor as top_users 
-				from segue
-				intersect
-				select quem_curtiu
-				from curtidas_post
-				intersect
-				select quem_curtiu
-				from curtidas_coment
-				intersect
-				select autor
-				from postagem
-				intersect
-				select comentador
-				from comentario);
+where usuario in(select seguidor as top_users from segue
+				intersect select quem_curtiu from curtidas_post
+				intersect select quem_curtiu from curtidas_coment
+				intersect select autor from postagem
+				intersect select comentador from comentario);
 
 
 -- Consulta que retorna os comentários que não tiveram curtidas e seus autores
@@ -576,8 +585,8 @@ insert into postagem values
 ('www.domain.com/post/joaosilva/9', 'joaosilva', 'Título da postagem 9', 'Conteúdo da postagem 9', '2023-06-09 14:14:14');
 
 select posts_no_periodo('2023-05-02', '2023-06-10'); --ordem certa
-select posts_no_periodo('2023-06-10', '2023-05-02'); --ordem contrária
-select posts_no_periodo('2023-01-01', '2023-01-01'); --mesmo dia
+--select posts_no_periodo('2023-06-10', '2023-05-02'); --ordem contrária
+--select posts_no_periodo('2023-01-01', '2023-01-01'); --mesmo dia
 
 
 --Função que retorna o número de postagens de usuários de uma determinada idade (informação importante para estudo de usuários)
@@ -599,7 +608,7 @@ return qtde_posts;
 End; $$ LANGUAGE 'plpgsql';
 
 select post_por_idade(32);
-select post_por_idade(-32);
+--select post_por_idade(-32);
 
 insert into usuario values
 ('marquinhos', 'marquinhos@gmail.com', 'f0f0', 'Marcos Neto', '2022-06-09');
@@ -659,7 +668,7 @@ END;
 $$
 LANGUAGE 'plpgsql';
 
-call desativar_conta('ianribeiro');
+--call desativar_conta('ianribeiro');
 
 select * from usuario;	
 select * from postagem;
@@ -668,12 +677,15 @@ select * from comentario;
 select * from curtidas_post;
 select * from curtidas_coment;
 
-call desativar_conta('ajsajshajshajsh');
+--call desativar_conta('ajsajshajshajsh');
 
 
 
 --2)f)Triggers
 --3 diferentes triggers com justificativa semântica, de acordo com os requisitos da aplicação.
+
+--Trigger para inserção na view: Foi inserido acima, junto da view que permite inserções.
+
 
 --Trigger para não permitir que usuários sigam a si mesmos
 create or replace function prevenir_auto_seguir()
@@ -690,7 +702,7 @@ create trigger tr_prevenir_auto_seguir
 before insert on segue
 for each row execute procedure prevenir_auto_seguir();
 
-insert into segue values('amandacruz', 'amandacruz');
+--insert into segue values('amandacruz', 'amandacruz');
 
 
 --Trigger para quando for fazer inserção em comentário, o campo editado sempre ser false
@@ -714,32 +726,6 @@ insert into comentario values
 ('www.domain.com/coment/12', 'www.domain.com/post/amandacruz/2', 'georgelima', 'Conteúdo do comentário 12', current_timestamp, true);
 
 Select * from comentario;
-
-
---Trigger para inserção na view
-CREATE OR REPLACE FUNCTION insert_postagens_comentarios()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Inserir na tabela "postagem" com base nos valores inseridos
-    INSERT INTO postagem(url, autor, titulo, conteudo, datahora)
-    VALUES (NEW.post, NEW.autor, NEW.titulo, NEW.conteudo_post, current_timestamp);
-	
-    -- Inserir na tabela "comentario" com base nos valores inseridos
-    INSERT INTO comentario(url_coment, url_post, comentador, conteudo, datahora, editado)
-    VALUES (NEW.comentario, NEW.post, NEW.autor, NEW.conteudo_coment, current_timestamp, FALSE);
-
-    RETURN NULL; -- Retorna NULL para evitar duplicação de dados na tabela subjacente
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER tr_insert_postagens_comentarios
-INSTEAD OF INSERT ON postagens_comentarios
-FOR EACH ROW
-EXECUTE PROCEDURE insert_postagens_comentarios();
-
-insert into postagens_comentarios values
-('www.domain.com/post/georgelima/13', 'georgelima', 'Titulo da postagem 13', 'Conteúdo da postagem 13', 'www.domain.com/coment/13', null, 'Conteúdo do comentário 13');
-
 select * from postagem;
 select * from comentario;
 select * from postagens_comentarios;
